@@ -1,0 +1,6 @@
+{
+  "format_version":1,
+  "blocks":{
+    "example:copper_block":{"name":"example_copper_block","material_instances":{"*":{"texture":"example:copper_block"}}}
+  }
+}

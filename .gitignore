@@ -1,0 +1,15 @@
+.gradle/
+**/build/
+.idea/
+.vscode/
+*.iml
+*.log
+.DS_Store
+out/
+/generated/*
+!/generated/polymer/
+!/generated/polymer/.gitkeep
+!/generated/java/
+!/generated/java/.gitkeep
+!/generated/bedrock/
+!/generated/bedrock/.gitkeep

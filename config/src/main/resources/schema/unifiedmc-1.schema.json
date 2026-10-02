@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unifiedmc.dev/schema/unifiedmc-1.schema.json",
+  "title": "UnifiedMC Core legacy configuration v1",
+  "type": "object",
+  "properties": {
+    "schema": { "const": "unifiedmc-1" },
+    "directories": {
+      "type": "object",
+      "properties": {
+        "fabric_mods": { "type": "string" },
+        "forge_mods": { "type": "string" },
+        "neoforge_mods": { "type": "string" },
+        "backends": { "type": "string" },
+        "packs": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

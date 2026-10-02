@@ -1,0 +1,18 @@
+[versions]
+jackson = "2.22.3"
+gradle = "9.8.0"
+junit = "5.14.3"
+spotless = "8.10.3"
+checkstyle = "10.26.1"
+
+[libraries]
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
+jackson-toml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-toml" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

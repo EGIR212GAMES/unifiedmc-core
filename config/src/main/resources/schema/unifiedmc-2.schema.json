@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unifiedmc.dev/schema/unifiedmc-2.schema.json",
+  "title": "UnifiedMC Core configuration v2",
+  "type": "object",
+  "required": ["schema", "server", "runtime", "mods", "versions", "compatibility", "bedrock", "protocol", "security", "logging", "storage"],
+  "properties": {
+    "schema": { "const": "unifiedmc-2" },
+    "server": {
+      "type": "object",
+      "required": ["name", "motd", "bind", "java-port", "bedrock-port"],
+      "properties": {
+        "name": { "type": "string" },
+        "motd": { "type": "string" },
+        "bind": { "type": "string" },
+        "java-port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "bedrock-port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["primary-version", "default-backend", "allow-multi-runtime"],
+      "properties": {
+        "primary-version": { "type": "string" },
+        "default-backend": { "type": "string" },
+        "allow-multi-runtime": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "mods": {
+      "type": "object",
+      "required": ["fabric-directory", "forge-directory", "neoforge-directory", "auto-download-dependencies", "verify-signatures", "strict-dependencies"],
+      "properties": {
+        "fabric-directory": { "type": "string" },
+        "forge-directory": { "type": "string" },
+        "neoforge-directory": { "type": "string" },
+        "auto-download-dependencies": { "type": "boolean" },
+        "verify-signatures": { "type": "boolean" },
+        "strict-dependencies": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "versions": {
+      "type": "object",
+      "required": ["allowed-client-versions", "backend-versions"],
+      "properties": {
+        "allowed-client-versions": { "type": "array", "items": { "type": "string" } },
+        "backend-versions": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["enabled", "mode", "fail-on-unsupported", "allow-partial-support"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mode": { "enum": ["strict", "adapter", "best-effort"] },
+        "fail-on-unsupported": { "type": "boolean" },
+        "allow-partial-support": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "bedrock": {
+      "type": "object",
+      "required": ["enabled", "geyser", "custom-content", "resource-packs"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "geyser": { "type": "boolean" },
+        "custom-content": { "type": "boolean" },
+        "resource-packs": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["enabled", "minimum-client", "maximum-client"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "minimum-client": { "type": "string" },
+        "maximum-client": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": ["allow-unsigned-mods", "isolated-runtimes", "checksum-policy"],
+      "properties": {
+        "allow-unsigned-mods": { "type": "boolean" },
+        "isolated-runtimes": { "type": "boolean" },
+        "checksum-policy": { "enum": ["required", "warn", "disabled"] }
+      },
+      "additionalProperties": false
+    },
+    "logging": {
+      "type": "object",
+      "required": ["level", "json", "file"],
+      "properties": {
+        "level": { "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"] },
+        "json": { "type": "boolean" },
+        "file": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "required": ["backend-directory", "pack-directory", "runtime-directory"],
+      "properties": {
+        "backend-directory": { "type": "string" },
+        "pack-directory": { "type": "string" },
+        "runtime-directory": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

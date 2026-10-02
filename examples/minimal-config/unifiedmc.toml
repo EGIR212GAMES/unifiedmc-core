@@ -1,0 +1,57 @@
+schema = "unifiedmc-2"
+
+[server]
+name = "UnifiedMC"
+motd = "UnifiedMC Server"
+bind = "0.0.0.0"
+java-port = 25565
+bedrock-port = 19132
+
+[runtime]
+primary-version = "26.3"
+default-backend = "neoforge-26.3"
+allow-multi-runtime = false
+
+[mods]
+fabric-directory = "./FabricMods"
+forge-directory = "./ForgeMods"
+neoforge-directory = "./NeoForgeMods"
+auto-download-dependencies = false
+verify-signatures = true
+strict-dependencies = true
+
+[versions]
+allowed-client-versions = ["1.21.1", "26.1", "26.2", "26.3"]
+backend-versions = ["26.3"]
+
+[compatibility]
+enabled = true
+mode = "strict"
+fail-on-unsupported = true
+allow-partial-support = false
+
+[bedrock]
+enabled = true
+geyser = true
+custom-content = false
+resource-packs = true
+
+[protocol]
+enabled = true
+minimum-client = "1.21.1"
+maximum-client = "26.3"
+
+[security]
+allow-unsigned-mods = false
+isolated-runtimes = true
+checksum-policy = "required"
+
+[logging]
+level = "INFO"
+json = false
+file = "./logs/unifiedmc.log"
+
+[storage]
+backend-directory = "./backends"
+pack-directory = "./packs"
+runtime-directory = "./runtimes"

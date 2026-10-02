@@ -1,0 +1,18 @@
+{
+  "schema": "unifiedmc-runtime-1",
+  "runtimeId": "26.3:modern_neoforge",
+  "gameVersion": "26.3",
+  "backend": "MODERN_NEOFORGE",
+  "loaderVersion": "UNPINNED",
+  "minimumJava": 25,
+  "recommendedJava": 25,
+  "sourceId": "official:neoforge",
+  "verified": false,
+  "artifactSha256": "REPLACE_WITH_SHA256",
+  "launchArtifact": "server.jar",
+  "launchArguments": ["-jar", "server.jar"],
+  "installedAt": "1970-01-01T00:00:00Z",
+  "metadata": {
+    "note": "Template only. Not a runnable or trusted installation manifest."
+  }
+}

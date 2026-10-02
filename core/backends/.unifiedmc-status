@@ -1,0 +1,10 @@
+state=FAILED
+pid=8692
+process-start=2026-10-02T04:32:35.049Z
+backend=
+timestamp=2026-10-02T04:32:37.716487500Z
+diagnostic=Default backend is not registered: neoforge-26.3
+health=UNHEALTHY
+runtime-status=FAILED
+mod-status=FAILED
+compatibility-status=FAILED

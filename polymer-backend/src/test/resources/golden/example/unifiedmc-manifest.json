@@ -1,0 +1,8 @@
+{
+  "adapterId":"example-mod-adapter",
+  "modId":"example",
+  "minecraftVersion":"26.3",
+  "loader":"NEOFORGE",
+  "status":"PARTIAL",
+  "diagnostics":["Content definition cannot be represented by the current Polymer backend"]
+}

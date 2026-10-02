@@ -1,0 +1,10 @@
+{
+  "kind":"block",
+  "id":"example:copper_block",
+  "hardness":"3.0",
+  "properties":{
+    "material":"copper",
+    "model":"example:copper_block",
+    "texture":"example:copper_block"
+  }
+}

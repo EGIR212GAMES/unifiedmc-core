@@ -1,0 +1,7 @@
+--release
+21
+-Xlint:all
+-Werror
+-d
+/tmp/pure/classes
+@/tmp/pure/sources.txt
