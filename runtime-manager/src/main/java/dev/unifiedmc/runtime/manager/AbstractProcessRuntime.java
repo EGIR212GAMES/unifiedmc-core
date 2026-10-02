@@ -1,5 +1,10 @@
 package dev.unifiedmc.runtime.manager;
 
+import dev.unifiedmc.runtime.BackendDescriptor;
+import dev.unifiedmc.runtime.BackendId;
+import dev.unifiedmc.runtime.BackendLaunchRequest;
+import dev.unifiedmc.runtime.BackendState;
+import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
 import dev.unifiedmc.runtime.MinecraftRuntime;
 import dev.unifiedmc.runtime.RuntimeCapabilities;
 import dev.unifiedmc.runtime.RuntimeCrashDiagnostics;
@@ -11,6 +16,8 @@ import dev.unifiedmc.runtime.RuntimeMetadata;
 import dev.unifiedmc.runtime.RuntimeProcess;
 import dev.unifiedmc.runtime.RuntimeRequest;
 import dev.unifiedmc.runtime.RuntimeValidationResult;
+import dev.unifiedmc.runtime.RuntimeValidator;
+import dev.unifiedmc.runtime.UnifiedBackend;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -21,7 +28,7 @@ import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Generic isolated process runtime. It executes only verified, rooted launch artifacts. */
-public abstract class AbstractProcessRuntime implements MinecraftRuntime {
+public abstract class AbstractProcessRuntime implements MinecraftRuntime, UnifiedBackend {
     private final RuntimeMetadata metadata;
     private final RuntimeInstallationManifest manifest;
     private final RuntimeValidator validator;
@@ -105,6 +112,74 @@ public abstract class AbstractProcessRuntime implements MinecraftRuntime {
         return current.health();
     }
 
+    /**
+     * Returns the current running process, if any. Used by backend implementations for console
+     * command forwarding.
+     */
+    protected Process getCurrentProcess() {
+        ManagedRuntimeProcess current = process;
+        return current != null ? current.getProcess() : null;
+    }
+
+    /** Stops the running process gracefully. */
+    @Override
+    public void stop() {
+        // Allow subclasses to perform pre-stop actions
+        preStop();
+        ManagedRuntimeProcess current = process;
+        if (current != null && current.isAlive()) {
+            current.stopGracefully(Duration.ofSeconds(30));
+        }
+    }
+
+    /**
+     * Hook called before stopping the process. Subclasses can override to send shutdown commands or
+     * perform other cleanup.
+     */
+    protected void preStop() {
+        // Default: no action
+    }
+
+    @Override
+    public BackendDescriptor descriptor() {
+        return new BackendDescriptor(
+                new BackendId(metadata.runtimeId()),
+                metadata.gameVersion(),
+                metadata.backend().toString().toLowerCase(java.util.Locale.ROOT),
+                metadata.loaderVersion(),
+                metadata.javaRequirement());
+    }
+
+    @Override
+    public BackendState state() {
+        var health = this.health();
+        if (health.status() == RuntimeHealthStatus.STOPPED) {
+            return BackendState.STOPPED;
+        }
+        if (health.status() == RuntimeHealthStatus.STARTING
+                || health.status() == RuntimeHealthStatus.STOPPING) {
+            return BackendState.STARTING;
+        }
+        if (health.status() == RuntimeHealthStatus.HEALTHY) {
+            return BackendState.RUNNING;
+        }
+        return BackendState.FAILED;
+    }
+
+    @Override
+    public void start(JavaRuntimeDescriptor javaRuntime, BackendLaunchRequest request) {
+        RuntimeRequest runtimeRequest =
+                new RuntimeRequest(
+                        request.workingDirectory(),
+                        javaRuntime,
+                        List.of(),
+                        List.of(),
+                        request.environment(),
+                        Duration.ofSeconds(120),
+                        Duration.ofSeconds(30));
+        start(runtimeRequest);
+    }
+
     protected List<String> buildCommand(RuntimeRequest request) {
         List<String> command = new java.util.ArrayList<>();
         command.add(request.javaRuntime().javaExecutable().toString());
@@ -118,7 +193,7 @@ public abstract class AbstractProcessRuntime implements MinecraftRuntime {
         return manifest;
     }
 
-    private static final class ManagedRuntimeHandle implements RuntimeHandle {
+    public static final class ManagedRuntimeHandle implements RuntimeHandle {
         private final ManagedRuntimeProcess process;
         private final Duration shutdownTimeout;
 
@@ -162,7 +237,7 @@ public abstract class AbstractProcessRuntime implements MinecraftRuntime {
         }
     }
 
-    private static final class ManagedRuntimeProcess implements RuntimeProcess {
+    static final class ManagedRuntimeProcess implements RuntimeProcess {
         private final Process process;
         private final Instant startedAt;
         private final LineBuffer stdout = new LineBuffer(200);
@@ -212,6 +287,11 @@ public abstract class AbstractProcessRuntime implements MinecraftRuntime {
         @Override
         public long pid() {
             return process.pid();
+        }
+
+        /** Returns the underlying Process for stdin access. */
+        Process getProcess() {
+            return process;
         }
 
         @Override

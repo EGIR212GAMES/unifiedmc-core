@@ -15,7 +15,6 @@ import dev.unifiedmc.dependency.ResolutionResult;
 import dev.unifiedmc.mod.ModDescriptor;
 import dev.unifiedmc.mod.manager.ModManager;
 import dev.unifiedmc.mod.manager.ModScanResult;
-import dev.unifiedmc.runtime.BackendCapabilities;
 import dev.unifiedmc.runtime.BackendDescriptor;
 import dev.unifiedmc.runtime.BackendId;
 import dev.unifiedmc.runtime.BackendLaunchRequest;
@@ -23,6 +22,9 @@ import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
 import dev.unifiedmc.runtime.JavaRuntimeManager;
 import dev.unifiedmc.runtime.JavaRuntimeValidation;
+import dev.unifiedmc.runtime.RuntimeCapabilities;
+import dev.unifiedmc.runtime.RuntimeHealth;
+import dev.unifiedmc.runtime.RuntimeHealthStatus;
 import dev.unifiedmc.runtime.UnifiedBackend;
 import dev.unifiedmc.runtime.manager.DefaultRuntimeManager;
 import dev.unifiedmc.version.GameVersion;
@@ -442,13 +444,25 @@ class DefaultUnifiedMcApplicationTest {
         }
 
         @Override
-        public BackendCapabilities capabilities() {
-            return new BackendCapabilities(Set.of("fixture"));
+        public RuntimeCapabilities capabilities() {
+            return new RuntimeCapabilities(Set.of("fixture"));
         }
 
         @Override
         public BackendState state() {
             return state;
+        }
+
+        @Override
+        public RuntimeHealth health() {
+            return new RuntimeHealth(
+                    state == BackendState.RUNNING
+                            ? RuntimeHealthStatus.HEALTHY
+                            : RuntimeHealthStatus.STOPPED,
+                    java.time.Instant.now(),
+                    -1,
+                    "Test backend " + state,
+                    Optional.empty());
         }
 
         @Override

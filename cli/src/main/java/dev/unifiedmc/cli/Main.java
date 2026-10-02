@@ -89,6 +89,7 @@ public final class Main {
             case "mods" -> handleMods(args, resolveConfig(args));
             case "versions" -> versions();
             case "runtimes" -> handleRuntimes(args);
+            case "backend" -> handleBackend(args, resolveConfig(args));
             case "help", "--help", "-h" -> {
                 printUsage();
                 yield 0;
@@ -426,6 +427,168 @@ public final class Main {
     }
 
 
+    private int handleBackend(String[] args, Path configPath) throws Exception {
+        if (args.length < 3) {
+            printBackendUsage();
+            return EXIT_USAGE;
+        }
+        String subcommand = args[1];
+        String backendId = args[2];
+        ConfigurationService service = new ConfigurationService();
+        CoreConfiguration config = service.load(configPath);
+        DefaultRuntimeManager runtimeManager = new DefaultRuntimeManager();
+        runtimeManager.discoverAndRegister(RuntimePaths.defaultRoot());
+
+        return switch (subcommand) {
+            case "install" -> backendInstall(args, config);
+            case "start" -> backendStart(backendId, config, runtimeManager);
+            case "stop" -> backendStop(backendId, runtimeManager);
+            case "restart" -> backendRestart(backendId, config, runtimeManager);
+            case "status" -> backendStatus(backendId, runtimeManager);
+            case "logs" -> backendLogs(backendId, runtimeManager, args);
+            case "command" -> backendCommand(backendId, runtimeManager, args);
+            default -> {
+                printBackendUsage();
+                yield EXIT_USAGE;
+            }
+        };
+    }
+
+    private int backendInstall(String[] args, CoreConfiguration config) {
+        if (args.length < 4) {
+            System.out.println("Usage: unifiedmc backend install <version> <backend>");
+            return EXIT_USAGE;
+        }
+        String version = args[2];
+        String backend = args[3];
+        if (!"neoforge".equalsIgnoreCase(backend)) {
+            System.out.println("Only 'neoforge' backend is supported for installation currently");
+            return EXIT_USAGE;
+        }
+        var installer = new dev.unifiedmc.runtime.manager.neoforge.NeoForgeRuntimeInstaller();
+        var result = installer.install(
+                new dev.unifiedmc.runtime.RuntimeInstallationRequest(
+                        version, dev.unifiedmc.runtime.RuntimeBackend.MODERN_NEOFORGE, RuntimePaths.defaultRoot()));
+        System.out.println(result.status() + ": " + result.message());
+        result.diagnostics().forEach(diagnostic -> System.out.println("  - " + diagnostic));
+        return result.status() == dev.unifiedmc.runtime.RuntimeInstallationStatus.INSTALLED
+                || result.status() == dev.unifiedmc.runtime.RuntimeInstallationStatus.ALREADY_INSTALLED ? 0 : EXIT_OPERATIONAL_FAILURE;
+    }
+
+    private int backendStart(String backendId, CoreConfiguration config, DefaultRuntimeManager runtimeManager) {
+        dev.unifiedmc.runtime.BackendId id = new dev.unifiedmc.runtime.BackendId(backendId);
+        Path workingDir = Path.of(config.storage().backendDirectory(), backendId);
+        try {
+            java.nio.file.Files.createDirectories(workingDir);
+        } catch (IOException e) {
+            System.err.println("Failed to create working directory: " + e.getMessage());
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+        dev.unifiedmc.runtime.BackendLaunchRequest request = new dev.unifiedmc.runtime.BackendLaunchRequest(
+                workingDir, List.of(), List.of(), Map.of());
+        try {
+            runtimeManager.start(id, request);
+            System.out.println("Backend " + backendId + " started");
+            return 0;
+        } catch (Exception e) {
+            System.err.println("Failed to start backend: " + e.getMessage());
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+    }
+
+    private int backendStop(String backendId, DefaultRuntimeManager runtimeManager) {
+        dev.unifiedmc.runtime.BackendId id = new dev.unifiedmc.runtime.BackendId(backendId);
+        try {
+            runtimeManager.stop(id);
+            System.out.println("Backend " + backendId + " stopped");
+            return 0;
+        } catch (Exception e) {
+            System.err.println("Failed to stop backend: " + e.getMessage());
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+    }
+
+    private int backendRestart(String backendId, CoreConfiguration config, DefaultRuntimeManager runtimeManager) {
+        backendStop(backendId, runtimeManager);
+        return backendStart(backendId, config, runtimeManager);
+    }
+
+    private int backendStatus(String backendId, DefaultRuntimeManager runtimeManager) {
+        dev.unifiedmc.runtime.BackendId id = new dev.unifiedmc.runtime.BackendId(backendId);
+        dev.unifiedmc.runtime.BackendState state = runtimeManager.state(id);
+        System.out.println("Backend: " + backendId);
+        System.out.println("State: " + state);
+
+        var backend = runtimeManager.find(id);
+        if (backend.isPresent()) {
+            var descriptor = backend.get().descriptor();
+            System.out.println("Minecraft Version: " + descriptor.gameVersion());
+            System.out.println("Loader: " + descriptor.loader() + " " + descriptor.loaderVersion());
+            System.out.println("Java Requirement: " + descriptor.javaRuntime().minimumJava() + " (recommended: " + descriptor.javaRuntime().recommendedJava() + ")");
+
+            var health = backend.get().health();
+            System.out.println("Health: " + health.status());
+            System.out.println("PID: " + health.pid());
+            System.out.println("Uptime: " + java.time.Duration.between(health.checkedAt(), java.time.Instant.now()).getSeconds() + "s");
+            if (health.crashDiagnostics().isPresent()) {
+                var crash = health.crashDiagnostics().get();
+                System.out.println("Crash: exit code " + crash.exitCode().orElse(-1));
+            }
+        }
+        return 0;
+    }
+
+    private int backendLogs(String backendId, DefaultRuntimeManager runtimeManager, String[] args) {
+        dev.unifiedmc.runtime.BackendId id = new dev.unifiedmc.runtime.BackendId(backendId);
+        var backend = runtimeManager.find(id);
+        if (backend.isEmpty()) {
+            System.err.println("Backend not found: " + backendId);
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+
+        int lines = 50;
+        for (int i = 3; i < args.length; i++) {
+            if (args[i].equals("--lines") && i + 1 < args.length) {
+                try {
+                    lines = Integer.parseInt(args[i + 1]);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        if (backend.get() instanceof dev.unifiedmc.runtime.manager.neoforge.NeoForgeBackend nb) {
+            System.out.println("=== STDOUT (last " + lines + " lines) ===");
+            nb.getStdoutTail().stream().skip(Math.max(0, nb.getStdoutTail().size() - lines)).forEach(System.out::println);
+            System.out.println("=== STDERR (last " + lines + " lines) ===");
+            nb.getStderrTail().stream().skip(Math.max(0, nb.getStderrTail().size() - lines)).forEach(System.out::println);
+        }
+        return 0;
+    }
+
+    private int backendCommand(String backendId, DefaultRuntimeManager runtimeManager, String[] args) {
+        if (args.length < 4) {
+            System.out.println("Usage: unifiedmc backend command <backend-id> <minecraft-command>");
+            return EXIT_USAGE;
+        }
+        dev.unifiedmc.runtime.BackendId id = new dev.unifiedmc.runtime.BackendId(backendId);
+        var backend = runtimeManager.find(id);
+        if (backend.isEmpty()) {
+            System.err.println("Backend not found: " + backendId);
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+
+        String command = String.join(" ", java.util.Arrays.copyOfRange(args, 3, args.length));
+        if (backend.get() instanceof dev.unifiedmc.runtime.manager.neoforge.NeoForgeBackend nb) {
+            nb.sendCommand(command);
+            System.out.println("Command sent: " + command);
+            return 0;
+        } else {
+            System.err.println("Backend does not support console commands");
+            return EXIT_OPERATIONAL_FAILURE;
+        }
+    }
+
+
     private static RuntimeBackend parseRuntimeBackend(String value) {
         return switch (value.trim().toLowerCase(java.util.Locale.ROOT)) {
             case "neoforge", "modern-neoforge", "modern_neoforge" -> RuntimeBackend.MODERN_NEOFORGE;
@@ -531,5 +694,24 @@ public final class Main {
         System.out.println("  unifiedmc runtimes list");
         System.out.println("  unifiedmc runtimes doctor");
         System.out.println("  unifiedmc runtimes install <version> <backend>");
+        System.out.println("  unifiedmc backend install <version> <backend>");
+        System.out.println("  unifiedmc backend start <backend-id>");
+        System.out.println("  unifiedmc backend stop <backend-id>");
+        System.out.println("  unifiedmc backend restart <backend-id>");
+        System.out.println("  unifiedmc backend status <backend-id>");
+        System.out.println("  unifiedmc backend logs <backend-id> [--lines N]");
+        System.out.println("  unifiedmc backend command <backend-id> <minecraft-command>");
+    }
+
+    private static void printBackendUsage() {
+        System.out.println("UnifiedMC Core - Backend Commands");
+        System.out.println("Usage:");
+        System.out.println("  unifiedmc backend install <version> <backend>");
+        System.out.println("  unifiedmc backend start <backend-id>");
+        System.out.println("  unifiedmc backend stop <backend-id>");
+        System.out.println("  unifiedmc backend restart <backend-id>");
+        System.out.println("  unifiedmc backend status <backend-id>");
+        System.out.println("  unifiedmc backend logs <backend-id> [--lines N]");
+        System.out.println("  unifiedmc backend command <backend-id> <minecraft-command>");
     }
 }

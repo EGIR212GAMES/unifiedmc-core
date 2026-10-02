@@ -7,6 +7,8 @@ import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
 import dev.unifiedmc.runtime.JavaRuntimeManager;
 import dev.unifiedmc.runtime.UnifiedBackend;
+import dev.unifiedmc.runtime.manager.neoforge.NeoForgeRuntimeProvider;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
@@ -17,13 +19,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DefaultRuntimeManager implements RuntimeManager {
     private final Map<BackendId, UnifiedBackend> backends = new ConcurrentHashMap<>();
     private final JavaRuntimeManager javaRuntimeManager;
+    private final NeoForgeRuntimeProvider neoforgeProvider;
 
     public DefaultRuntimeManager() {
-        this(new DefaultJavaRuntimeManager());
+        this(new DefaultJavaRuntimeManager(), new NeoForgeRuntimeProvider());
     }
 
     public DefaultRuntimeManager(JavaRuntimeManager javaRuntimeManager) {
+        this(javaRuntimeManager, new NeoForgeRuntimeProvider());
+    }
+
+    public DefaultRuntimeManager(
+            JavaRuntimeManager javaRuntimeManager, NeoForgeRuntimeProvider neoforgeProvider) {
         this.javaRuntimeManager = Objects.requireNonNull(javaRuntimeManager, "javaRuntimeManager");
+        this.neoforgeProvider = Objects.requireNonNull(neoforgeProvider, "neoforgeProvider");
     }
 
     @Override
@@ -93,5 +102,17 @@ public final class DefaultRuntimeManager implements RuntimeManager {
     @Override
     public JavaRuntimeManager javaRuntimes() {
         return javaRuntimeManager;
+    }
+
+    @Override
+    public void discoverAndRegister(Path runtimeRoot) {
+        // Discover NeoForge backends
+        for (BackendDescriptor descriptor : neoforgeProvider.listBackends(runtimeRoot)) {
+            if (!backends.containsKey(descriptor.id())) {
+                neoforgeProvider
+                        .createBackend(descriptor.id(), runtimeRoot)
+                        .ifPresent(this::register);
+            }
+        }
     }
 }

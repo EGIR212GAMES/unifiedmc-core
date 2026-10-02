@@ -4,9 +4,11 @@ package dev.unifiedmc.runtime;
 public interface UnifiedBackend {
     BackendDescriptor descriptor();
 
-    BackendCapabilities capabilities();
+    RuntimeCapabilities capabilities();
 
     BackendState state();
+
+    RuntimeHealth health();
 
     /** Starts the backend using the explicitly selected Java runtime. */
     void start(JavaRuntimeDescriptor javaRuntime, BackendLaunchRequest request);

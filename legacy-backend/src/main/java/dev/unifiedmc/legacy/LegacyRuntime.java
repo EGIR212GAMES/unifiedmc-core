@@ -2,8 +2,8 @@ package dev.unifiedmc.legacy;
 
 import dev.unifiedmc.runtime.RuntimeInstallationManifest;
 import dev.unifiedmc.runtime.RuntimeMetadata;
+import dev.unifiedmc.runtime.RuntimeValidator;
 import dev.unifiedmc.runtime.manager.AbstractProcessRuntime;
-import dev.unifiedmc.runtime.manager.RuntimeValidator;
 
 /** Minecraft/Forge runtime wrapper for an isolated legacy process. */
 public final class LegacyRuntime extends AbstractProcessRuntime {

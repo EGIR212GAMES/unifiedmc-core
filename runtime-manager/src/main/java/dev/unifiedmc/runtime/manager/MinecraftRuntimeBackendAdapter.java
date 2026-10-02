@@ -1,6 +1,5 @@
 package dev.unifiedmc.runtime.manager;
 
-import dev.unifiedmc.runtime.BackendCapabilities;
 import dev.unifiedmc.runtime.BackendDescriptor;
 import dev.unifiedmc.runtime.BackendId;
 import dev.unifiedmc.runtime.BackendLaunchRequest;
@@ -8,14 +7,15 @@ import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
 import dev.unifiedmc.runtime.MinecraftRuntime;
 import dev.unifiedmc.runtime.RuntimeBackend;
+import dev.unifiedmc.runtime.RuntimeCapabilities;
 import dev.unifiedmc.runtime.RuntimeHandle;
+import dev.unifiedmc.runtime.RuntimeHealth;
 import dev.unifiedmc.runtime.RuntimeHealthStatus;
 import dev.unifiedmc.runtime.RuntimeMetadata;
 import dev.unifiedmc.runtime.RuntimeRequest;
 import dev.unifiedmc.runtime.UnifiedBackend;
 import java.time.Duration;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Transitional adapter allowing the new runtime abstraction to participate in the existing
@@ -41,8 +41,8 @@ public final class MinecraftRuntimeBackendAdapter implements UnifiedBackend {
     }
 
     @Override
-    public BackendCapabilities capabilities() {
-        return new BackendCapabilities(Set.copyOf(runtime.capabilities().values()));
+    public RuntimeCapabilities capabilities() {
+        return runtime.capabilities();
     }
 
     @Override
@@ -55,6 +55,11 @@ public final class MinecraftRuntimeBackendAdapter implements UnifiedBackend {
             case FAILED -> BackendState.FAILED;
             case STOPPED, DISCOVERING, INSTALLING, UNKNOWN -> BackendState.STOPPED;
         };
+    }
+
+    @Override
+    public RuntimeHealth health() {
+        return runtime.health();
     }
 
     @Override

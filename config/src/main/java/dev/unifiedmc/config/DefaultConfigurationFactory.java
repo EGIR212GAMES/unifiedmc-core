@@ -25,7 +25,7 @@ public final class DefaultConfigurationFactory {
         return new CoreConfiguration(
                 DEFAULT_SCHEMA,
                 new ServerConfig(DEFAULT_SERVER_NAME, "UnifiedMC Server", "0.0.0.0", 25565, 19132),
-                new RuntimeConfig("26.3", "neoforge-26.3", false),
+                new RuntimeConfig("26.3", "neoforge-26.3", false, false),
                 new ModConfig("./FabricMods", "./ForgeMods", "./NeoForgeMods", false, true, true),
                 new VersionConfig(List.of("1.21.1", "26.1", "26.2", "26.3"), List.of("26.3")),
                 new CompatibilityConfig(true, CompatibilityMode.STRICT, true, false),

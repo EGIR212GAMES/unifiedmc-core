@@ -6,6 +6,7 @@ import dev.unifiedmc.runtime.BackendLaunchRequest;
 import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeManager;
 import dev.unifiedmc.runtime.UnifiedBackend;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +25,7 @@ public interface RuntimeManager {
     BackendState state(BackendId id);
 
     JavaRuntimeManager javaRuntimes();
+
+    /** Discovers and registers available backends from the registry. */
+    void discoverAndRegister(Path runtimeRoot);
 }

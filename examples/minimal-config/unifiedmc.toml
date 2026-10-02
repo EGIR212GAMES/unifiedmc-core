@@ -11,6 +11,7 @@ bedrock-port = 19132
 primary-version = "26.3"
 default-backend = "neoforge-26.3"
 allow-multi-runtime = false
+eula-accepted = false
 
 [mods]
 fabric-directory = "./FabricMods"

@@ -4,7 +4,7 @@ import dev.unifiedmc.runtime.BackendDescriptor;
 import dev.unifiedmc.runtime.RuntimeInstallationManifest;
 import dev.unifiedmc.runtime.RuntimeMetadata;
 import dev.unifiedmc.runtime.RuntimeValidationResult;
-import dev.unifiedmc.runtime.manager.RuntimeValidator;
+import dev.unifiedmc.runtime.RuntimeValidator;
 import java.util.Objects;
 
 /** Factory for isolated legacy Forge backends from verified runtime manifests. */

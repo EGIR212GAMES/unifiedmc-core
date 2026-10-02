@@ -1,10 +1,11 @@
 package dev.unifiedmc.legacy;
 
-import dev.unifiedmc.runtime.BackendCapabilities;
 import dev.unifiedmc.runtime.BackendDescriptor;
 import dev.unifiedmc.runtime.BackendLaunchRequest;
 import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
+import dev.unifiedmc.runtime.RuntimeCapabilities;
+import dev.unifiedmc.runtime.RuntimeHealth;
 import dev.unifiedmc.runtime.RuntimeRequest;
 import dev.unifiedmc.runtime.UnifiedBackend;
 import java.time.Duration;
@@ -14,7 +15,7 @@ import java.util.Set;
 /** Unified backend facade for one isolated Forge legacy runtime. */
 public final class LegacyBackend implements UnifiedBackend {
     private final BackendDescriptor descriptor;
-    private final BackendCapabilities capabilities;
+    private final RuntimeCapabilities capabilities;
     private final LegacyRuntime runtime;
     private final LegacyRecoveryPolicy recoveryPolicy;
     private final LegacyBridge bridge;
@@ -30,7 +31,7 @@ public final class LegacyBackend implements UnifiedBackend {
         this.recoveryPolicy = Objects.requireNonNull(recoveryPolicy, "recoveryPolicy");
         this.bridge = Objects.requireNonNull(bridge, "bridge");
         this.capabilities =
-                new BackendCapabilities(
+                new RuntimeCapabilities(
                         Set.of(
                                 "isolated-world",
                                 "shared-player-bridge",
@@ -46,7 +47,7 @@ public final class LegacyBackend implements UnifiedBackend {
     }
 
     @Override
-    public BackendCapabilities capabilities() {
+    public RuntimeCapabilities capabilities() {
         return capabilities;
     }
 
@@ -64,6 +65,11 @@ public final class LegacyBackend implements UnifiedBackend {
             case FAILED -> BackendState.FAILED;
             case STOPPED, UNKNOWN -> BackendState.STOPPED;
         };
+    }
+
+    @Override
+    public RuntimeHealth health() {
+        return runtime.health();
     }
 
     @Override

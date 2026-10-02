@@ -11,4 +11,9 @@ public record BackendCapabilities(Set<String> values) {
     public boolean supports(String capability) {
         return values.contains(capability);
     }
+
+    /** Converts to RuntimeCapabilities for runtime-layer interoperability. */
+    public RuntimeCapabilities toRuntimeCapabilities() {
+        return new RuntimeCapabilities(values);
+    }
 }

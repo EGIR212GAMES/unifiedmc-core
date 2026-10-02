@@ -2,6 +2,7 @@ package dev.unifiedmc.runtime.manager;
 
 import dev.unifiedmc.runtime.RuntimeInstallationManifest;
 import dev.unifiedmc.runtime.RuntimeMetadata;
+import dev.unifiedmc.runtime.RuntimeValidator;
 import dev.unifiedmc.version.GameVersion;
 import dev.unifiedmc.version.JavaRuntimeRequirement;
 import java.nio.file.Path;

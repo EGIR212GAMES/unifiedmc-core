@@ -1,6 +1,5 @@
 package dev.unifiedmc.testkit;
 
-import dev.unifiedmc.runtime.BackendCapabilities;
 import dev.unifiedmc.runtime.BackendDescriptor;
 import dev.unifiedmc.runtime.BackendId;
 import dev.unifiedmc.runtime.BackendLaunchRequest;
@@ -8,6 +7,8 @@ import dev.unifiedmc.runtime.BackendState;
 import dev.unifiedmc.runtime.JavaRuntimeDescriptor;
 import dev.unifiedmc.runtime.JavaRuntimeManager;
 import dev.unifiedmc.runtime.JavaRuntimeValidation;
+import dev.unifiedmc.runtime.RuntimeCapabilities;
+import dev.unifiedmc.runtime.RuntimeHealth;
 import dev.unifiedmc.runtime.UnifiedBackend;
 import dev.unifiedmc.version.GameVersion;
 import dev.unifiedmc.version.JavaRuntimeRequirement;
@@ -110,13 +111,23 @@ public final class BackendFixtures {
         }
 
         @Override
-        public BackendCapabilities capabilities() {
-            return new BackendCapabilities(Set.of("fixture"));
+        public RuntimeCapabilities capabilities() {
+            return new RuntimeCapabilities(Set.of("fixture"));
         }
 
         @Override
         public BackendState state() {
             return BackendState.STOPPED;
+        }
+
+        @Override
+        public RuntimeHealth health() {
+            return new RuntimeHealth(
+                    dev.unifiedmc.runtime.RuntimeHealthStatus.STOPPED,
+                    java.time.Instant.now(),
+                    -1,
+                    "Fixture backend is stopped",
+                    Optional.empty());
         }
 
         @Override
