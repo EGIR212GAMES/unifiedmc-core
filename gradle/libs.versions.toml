@@ -2,7 +2,7 @@
 jackson = "2.22.3"
 gradle = "9.8.0"
 junit = "5.14.3"
-spotless = "8.10.3"
+spotless = "8.10.4"
 checkstyle = "10.26.1"
 
 [libraries]

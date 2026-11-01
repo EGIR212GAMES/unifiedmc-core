@@ -14,7 +14,7 @@ dependencyResolutionManagement {
 }
 
 plugins {
-    id("com.diffplug.spotless") version "8.10.3" apply false
+    id("com.diffplug.spotless") version "8.10.4" apply false
 }
 
 rootProject.name = "unifiedmc-core"
