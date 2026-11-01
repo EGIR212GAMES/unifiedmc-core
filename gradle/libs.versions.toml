@@ -1,5 +1,5 @@
 [versions]
-jackson = "2.22.3"
+jackson = "2.22.4"
 gradle = "9.8.0"
 junit = "5.14.3"
 spotless = "8.10.3"
